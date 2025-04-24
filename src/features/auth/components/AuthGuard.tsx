@@ -1,0 +1,16 @@
+"use client";
+import { useAuth } from "../hooks/useAuth";
+
+export default function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <div>Failed to initialize session</div>;
+  }
+
+  return children;
+}
