@@ -1,3 +1,9 @@
+import { Chat } from "@/features/chat";
+
 export default function Home() {
-  return <div></div>;
+  return (
+    <div>
+      <Chat />
+    </div>
+  );
 }
