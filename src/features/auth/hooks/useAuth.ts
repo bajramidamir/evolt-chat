@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { pb } from "@/libs/pocketbase";
 import { User } from "@/types/types";
 
@@ -14,7 +14,8 @@ export function useAuth() {
   const generateUsername = () =>
     `User${Math.random().toString(12).substring(2, 8)}`;
 
-  const initAuth = async () => {
+  // Memoize the initAuth function
+  const initAuth = useCallback(async () => {
     setLoading(true);
     try {
       const sessionUser = sessionStorage.getItem(SESSION_STORAGE_KEY);
@@ -34,6 +35,7 @@ export function useAuth() {
           id: userData.id,
           username: userData.username,
           created: userData.created,
+          status: "online",
         };
 
         sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(newUser));
@@ -51,11 +53,11 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     initAuth();
-  }, []);
+  }, [initAuth]);
 
   return { user, loading, error };
 }

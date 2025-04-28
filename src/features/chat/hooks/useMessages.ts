@@ -1,35 +1,56 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { pb } from "@/libs/pocketbase";
 import { MessageWithUser } from "@/types/types";
 
+const PAGE_SIZE = 10;
+
 export function useMessages(initialMessages: MessageWithUser[] = []) {
-  const [messages, setMessages] = useState<MessageWithUser[]>(() =>
-    [...initialMessages].sort(
-      (a, b) => new Date(a.created).getTime() - new Date(b.created).getTime()
-    )
-  );
+  const [allMessages, setAllMessages] =
+    useState<MessageWithUser[]>(initialMessages);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
-    const sub = pb.collection("messages").subscribe("*", async (e) => {
-      const newMsg = await pb
+    const subscribe = async () => {
+      const unsub = await pb
         .collection("messages")
-        .getOne<MessageWithUser>(e.record.id, {
-          expand: "user",
+        .subscribe("*", async (e) => {
+          if (e.action === "create") {
+            // Fetch the full expanded message
+            const fullMessage = await pb
+              .collection("messages")
+              .getOne<MessageWithUser>(e.record.id, {
+                expand: "user",
+              });
+
+            setAllMessages((prev) => {
+              const updated = [...prev, fullMessage];
+              updated.sort(
+                (a, b) =>
+                  new Date(b.created).getTime() - new Date(a.created).getTime()
+              );
+              return updated;
+            });
+          }
         });
 
-      setMessages((prev) =>
-        [...prev, newMsg].sort(
-          (a, b) =>
-            new Date(a.created).getTime() - new Date(b.created).getTime()
-        )
-      );
-    });
+      return unsub;
+    };
+
+    const unsubPromise = subscribe();
 
     return () => {
-      pb.collection("messages").unsubscribe();
+      unsubPromise.then((unsub) => unsub());
     };
   }, []);
 
-  return { messages };
+  const loadMore = () => {
+    setVisibleCount((prev) => prev + PAGE_SIZE);
+  };
+
+  const hasMore = visibleCount < allMessages.length;
+  const visibleMessages = allMessages.slice(0, visibleCount);
+
+  return { messages: visibleMessages, loadMore, hasMore };
 }

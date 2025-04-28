@@ -1,8 +1,10 @@
 "use client";
 import { useAuth } from "../hooks/useAuth";
+import { usePresence } from "@/features/user";
 
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
+export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading, error } = useAuth();
+  usePresence(user?.id ?? "");
 
   if (loading) return <div>Initializing session...</div>;
   if (error) return <div className="text-red-500">{error}</div>;

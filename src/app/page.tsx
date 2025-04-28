@@ -2,7 +2,7 @@ import { Chat } from "@/features/chat";
 
 export default function Home() {
   return (
-    <div>
+    <div className="mx-auto max-w-5xl">
       <Chat />
     </div>
   );

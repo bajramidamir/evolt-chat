@@ -8,12 +8,12 @@ export function MessageInput() {
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async () => {
-    if (!text.trim()) return; // optional: prevent empty messages
+    if (!text.trim()) return;
 
     setSending(true);
     try {
       await sendMessage(text.trim());
-      setText(""); // clear input only if successful
+      setText("");
     } catch (error) {
       console.error("Failed to send message:", error);
     } finally {
@@ -26,13 +26,13 @@ export function MessageInput() {
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="flex-1 p-2 border rounded"
+        className="flex-1 p-2 bg-white border border-blue-300 active:border-blue-600 focus:border-blue-600 shadow-sm"
         placeholder="Type a message..."
         disabled={sending}
       />
       <button
         onClick={handleSubmit}
-        className="p-2 bg-blue-500 text-white rounded disabled:bg-blue-300"
+        className="p-2 bg-blue-500 text-white disabled:bg-blue-300"
         disabled={sending}
       >
         {sending ? "Sending..." : "Send"}
